@@ -1,10 +1,13 @@
 import json
 import os
+from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 
 import requests
 
 MAX_DISPLAY_HASHTAGS = 8
+
+delay = timedelta(minutes=5)
 
 bearer = os.environ['BEARER_TOKEN']
 
@@ -22,7 +25,8 @@ last = []
 
 def format_top(top):
     return " ".join(
-        map(lambda t: f"{t[0]+1}. \u2067{t[1][0]}\u2069: {t[1][1]}\t", enumerate(top)))
+        map(lambda t: f"{t[0] + 1}. \u2067{t[1][0]}\u2069: {len(t[1][1])}\t",
+            enumerate(top)))
 
 
 for line in r.iter_lines(decode_unicode=True):
@@ -37,10 +41,16 @@ for line in r.iter_lines(decode_unicode=True):
                 for tag in tags:
                     tag_tag = tag['tag']
                     if tag_tag not in tags_stats:
-                        tags_stats[tag_tag] = 1
+                        tags_stats[tag_tag] = [datetime.now()]
                     else:
-                        tags_stats[tag_tag] += 1
-                top = sorted(tags_stats.items(), key=lambda item: item[1],
+                        tags_stats[tag_tag].append(datetime.now())
+                tags_stats = {
+                    k: list(filter(lambda d: d >= (datetime.now() - delay),
+                                   dates))
+                    for
+                    k, dates in tags_stats.items()}
+                # print(str(tags_stats))
+                top = sorted(tags_stats.items(), key=lambda item: len(item[1]),
                              reverse=True)[:MAX_DISPLAY_HASHTAGS]
                 if list(map(lambda a: a[0], top)) != list(
                         map(lambda a: a[0], last)):
