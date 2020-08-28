@@ -24,7 +24,8 @@ for line in r.iter_lines(decode_unicode=True):
     if line:
         try:
             parsed = json.loads(line)
-            if 'data' in parsed and 'entities' in parsed['data'] and 'hashtags' in \
+            if 'data' in parsed and 'entities' in parsed[
+                'data'] and 'hashtags' in \
                     parsed['data']['entities']:
                 tags = parsed['data']['entities']['hashtags']
                 for tag in tags:
@@ -35,7 +36,7 @@ for line in r.iter_lines(decode_unicode=True):
                         tags_stats[tag_tag] += 1
                 top = sorted(tags_stats.items(), key=lambda item: item[1],
                              reverse=True)[:MAX_DISPLAY_HASHTAGS]
-                if top != last:
+                if list(map(lambda a: a[0], top)) != list(map(lambda a: a[0], last)):
                     print(f'Top {MAX_DISPLAY_HASHTAGS} hashtags: ' + str(top))
                     last = top
         except JSONDecodeError as e:
