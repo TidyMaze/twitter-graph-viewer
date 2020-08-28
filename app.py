@@ -19,8 +19,11 @@ if r.encoding is None:
 
 last = []
 
-def formatTop(top):
-    return " ".join(map(lambda t: f"{t[0]}. {t[1][0]}: {t[1][1]}\t", enumerate(top)))
+
+def format_top(top):
+    return " ".join(
+        map(lambda t: f"{t[0]+1}. \u2067{t[1][0]}\u2069: {t[1][1]}\t", enumerate(top)))
+
 
 for line in r.iter_lines(decode_unicode=True):
     # filter out keep-alive new lines
@@ -41,7 +44,8 @@ for line in r.iter_lines(decode_unicode=True):
                              reverse=True)[:MAX_DISPLAY_HASHTAGS]
                 if list(map(lambda a: a[0], top)) != list(
                         map(lambda a: a[0], last)):
-                    print(f'Top {MAX_DISPLAY_HASHTAGS} hashtags: ' + formatTop(top))
+                    print(f'Top {MAX_DISPLAY_HASHTAGS} hashtags: ' + format_top(
+                        top))
                     last = top
         except JSONDecodeError as e:
             print(f"error when parsing json: {e} for line {line}")
