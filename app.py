@@ -45,17 +45,18 @@ for line in r.iter_lines(decode_unicode=True):
                     else:
                         tags_stats[tag_tag].append(datetime.now())
                 tags_stats = {
-                    k: list(filter(lambda d: d >= (datetime.now() - delay),
-                                   dates))
+                    k: updated
                     for
-                    k, dates in tags_stats.items()}
+                    k, dates in tags_stats.items() for updated in
+                    [list(filter(lambda d: d >= (datetime.now() - delay),
+                                 dates))] if len(updated) > 0}
                 # print(str(tags_stats))
                 top = sorted(tags_stats.items(), key=lambda item: len(item[1]),
                              reverse=True)[:MAX_DISPLAY_HASHTAGS]
                 if list(map(lambda a: a[0], top)) != list(
                         map(lambda a: a[0], last)):
                     print(f'Top {MAX_DISPLAY_HASHTAGS} hashtags: ' + format_top(
-                        top))
+                        top) + f' total {len(tags_stats)}')
                     last = top
         except JSONDecodeError as e:
             print(f"error when parsing json: {e} for line {line}")
