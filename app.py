@@ -7,7 +7,7 @@ import requests
 
 MAX_DISPLAY_HASHTAGS = 8
 
-delay = timedelta(minutes=5)
+delay = timedelta(minutes=1)
 
 bearer = os.environ['BEARER_TOKEN']
 
