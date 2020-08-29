@@ -2,9 +2,9 @@ import json
 import os
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
-from neo4j import GraphDatabase
 
 import requests
+from neo4j import GraphDatabase
 
 MAX_DISPLAY_HASHTAGS = 8
 
@@ -15,11 +15,27 @@ graphenedb_url = os.environ.get("GRAPHENEDB_BOLT_URL")
 graphenedb_user = os.environ.get("GRAPHENEDB_BOLT_USER")
 graphenedb_pass = os.environ.get("GRAPHENEDB_BOLT_PASSWORD")
 
+driver = GraphDatabase.driver(graphenedb_url,
+                              auth=(graphenedb_user, graphenedb_pass),
+                              encrypted=True)
+
+session = driver.session()
+
+session.run("MATCH (:Person {name: 'Tom Hanks'})-[:ACTED_IN]->(tomHanksMovies) RETURN movies")
+
+def print_count(tx):
+    for record in tx.run(query):
+        print(record["movies"]["title"])
+
+with driver.session() as session:
+    session.read_transaction(print_count)
+
 tags_stats = {}
 
 r = requests.get('https://api.twitter.com/2/tweets/sample/stream',
                  params={'tweet.fields': 'entities'},
-                 headers={'Authorization': 'Bearer ' + twitter_bearer}, stream=True)
+                 headers={'Authorization': 'Bearer ' + twitter_bearer},
+                 stream=True)
 
 if r.encoding is None:
     r.encoding = 'utf-8'
