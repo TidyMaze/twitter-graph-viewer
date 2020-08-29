@@ -19,7 +19,7 @@ driver = GraphDatabase.driver(graphenedb_url, auth=(graphenedb_user, graphenedb_
 
 session = driver.session()
 
-session.run("MATCH (:Person {name: 'Tom Hanks'})-[:ACTED_IN]->(tomHanksMovies) RETURN movies")
+session.run("MATCH (n:Movie) RETURN n LIMIT 25")
 
 def print_count(tx):
     for record in tx.run(query):
