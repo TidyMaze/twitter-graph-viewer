@@ -22,6 +22,9 @@ session = driver.session()
 for record in session.run("MATCH (n:Movie) RETURN n LIMIT 25"):
     print(record["title"])
 
+session.close()
+driver.close()
+
 tags_stats = {}
 
 r = requests.get('https://api.twitter.com/2/tweets/sample/stream',
