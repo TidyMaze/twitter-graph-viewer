@@ -2,6 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
+from neo4j import GraphDatabase
 
 import requests
 
@@ -9,13 +10,16 @@ MAX_DISPLAY_HASHTAGS = 8
 
 delay = timedelta(minutes=1)
 
-bearer = os.environ['BEARER_TOKEN']
+twitter_bearer = os.environ['BEARER_TOKEN']
+graphenedb_url = os.environ.get("GRAPHENEDB_BOLT_URL")
+graphenedb_user = os.environ.get("GRAPHENEDB_BOLT_USER")
+graphenedb_pass = os.environ.get("GRAPHENEDB_BOLT_PASSWORD")
 
 tags_stats = {}
 
 r = requests.get('https://api.twitter.com/2/tweets/sample/stream',
                  params={'tweet.fields': 'entities'},
-                 headers={'Authorization': 'Bearer ' + bearer}, stream=True)
+                 headers={'Authorization': 'Bearer ' + twitter_bearer}, stream=True)
 
 if r.encoding is None:
     r.encoding = 'utf-8'
