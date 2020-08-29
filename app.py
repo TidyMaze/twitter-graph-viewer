@@ -20,7 +20,7 @@ driver = GraphDatabase.driver(graphenedb_url, auth=(graphenedb_user, graphenedb_
 session = driver.session()
 
 for record in session.run("MATCH (n:Movie) RETURN n LIMIT 25"):
-    print(record["movies"]["title"])
+    print(record["title"])
 
 tags_stats = {}
 
