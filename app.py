@@ -15,7 +15,7 @@ graphenedb_url = os.environ.get("GRAPHENEDB_BOLT_URL")
 graphenedb_user = os.environ.get("GRAPHENEDB_BOLT_USER")
 graphenedb_pass = os.environ.get("GRAPHENEDB_BOLT_PASSWORD")
 
-driver = GraphDatabase.driver(graphenedb_url, auth=(graphenedb_user, graphenedb_pass), trust='TRUST_ALL_CERTIFICATES')
+driver = GraphDatabase.driver(graphenedb_url, auth=(graphenedb_user, graphenedb_pass), encrypted=True)
 
 session = driver.session()
 
