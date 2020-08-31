@@ -40,7 +40,7 @@ driver.close()
 tags_stats = {}
 
 r = requests.get('https://api.twitter.com/2/tweets/sample/stream',
-                 params={'tweet.fields': 'entities'},
+                 params={'tweet.fields': ['id', 'text', 'entities', 'created_at']},
                  headers={'Authorization': 'Bearer ' + twitter_bearer},
                  stream=True)
 
