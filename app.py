@@ -88,8 +88,8 @@ def merge_hashtag(tx, tag):
 
 
 def merge_tweet_hashtag(tx, tweet, hashtag):
-    tx.run("MATCH (t: Tweet), (h: Hashtag)"
-           "WHERE t.id=$tweet_id AND h.tag=$hashtag_tag"
+    tx.run("MATCH (t: Tweet), (h: Hashtag) "
+           "WHERE t.id=$tweet_id AND h.tag=$hashtag_tag "
            "MERGE (t)-[r:TAGGED_AS]->(h)",
            tweet_id=tweet.id,
            hashtag_tag=hashtag
