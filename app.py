@@ -147,7 +147,8 @@ def main():
                             store_local(tags_stats, tag)
                         tags_stats = cleanup_local_history(tags_stats)
                         last = handle_new_local_top(tags_stats, last)
-                        store_tweet(driver, tweet)
+                        if len(tweet.hashtags) > 0:
+                            store_tweet(driver, tweet)
                 except JSONDecodeError as e:
                     print(f"error when parsing json: {e} for line {line}")
 
