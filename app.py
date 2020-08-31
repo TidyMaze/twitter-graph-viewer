@@ -83,9 +83,17 @@ def merge_tweet(tx, tweet):
     )
 
 
+def merge_hashtag(tx, tag):
+    tx.run("MERGE (t: Hashtag {tag: tag})", tag=tag)
+
+
 def store_tweet(driver, tweet):
     with driver.session() as session:
         session.write_transaction(merge_tweet, tweet)
+        map(
+            lambda hashtag: session.write_transaction(merge_hashtag, hashtag),
+            tweet.hashtags
+        )
 
 
 def main():
