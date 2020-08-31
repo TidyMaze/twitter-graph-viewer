@@ -89,47 +89,46 @@ def store_tweet(driver, tweet):
 
 
 def main():
-    driver = GraphDatabase.driver(graphenedb_url,
-                                  auth=(graphenedb_user, graphenedb_pass),
-                                  encrypted=True)
+    with GraphDatabase.driver(graphenedb_url,
+                              auth=(graphenedb_user, graphenedb_pass),
+                              encrypted=True) as driver:
+        r = requests.get('https://api.twitter.com/2/tweets/sample/stream',
+                         params={
+                             'tweet.fields': ['id', 'text', 'entities',
+                                              'created_at']},
+                         headers={'Authorization': 'Bearer ' + twitter_bearer},
+                         stream=True)
 
-    r = requests.get('https://api.twitter.com/2/tweets/sample/stream',
-                     params={
-                         'tweet.fields': ['id', 'text', 'entities',
-                                          'created_at']},
-                     headers={'Authorization': 'Bearer ' + twitter_bearer},
-                     stream=True)
+        if r.encoding is None:
+            r.encoding = 'utf-8'
 
-    if r.encoding is None:
-        r.encoding = 'utf-8'
+        last = []
 
-    last = []
+        tags_stats = {}
 
-    tags_stats = {}
-
-    for line in r.iter_lines(decode_unicode=True):
-        # filter out keep-alive new lines
-        if line:
-            try:
-                parsed = json.loads(line)
-                if 'data' in parsed and 'entities' in parsed[
-                    'data'] and 'hashtags' in \
-                        parsed['data']['entities']:
-                    tweet = Tweet(
-                        id=parsed['data']['id'],
-                        text=parsed['data']['text'],
-                        created_at=parse_datetime_iso(
-                            parsed['data']['created_at']),
-                        hashtags=map(lambda hashtag: hashtag['tag'],
-                                     parsed['data']['entities']['hashtags'])
-                    )
-                    for tag in tweet.hashtags:
-                        store_local(tags_stats, tag)
-                    tags_stats = cleanup_local_history(tags_stats)
-                    last = handle_new_local_top(tags_stats, last)
-                    store_tweet(driver, tweet)
-            except JSONDecodeError as e:
-                print(f"error when parsing json: {e} for line {line}")
+        for line in r.iter_lines(decode_unicode=True):
+            # filter out keep-alive new lines
+            if line:
+                try:
+                    parsed = json.loads(line)
+                    if 'data' in parsed and 'entities' in parsed[
+                        'data'] and 'hashtags' in \
+                            parsed['data']['entities']:
+                        tweet = Tweet(
+                            id=parsed['data']['id'],
+                            text=parsed['data']['text'],
+                            created_at=parse_datetime_iso(
+                                parsed['data']['created_at']),
+                            hashtags=map(lambda hashtag: hashtag['tag'],
+                                         parsed['data']['entities']['hashtags'])
+                        )
+                        for tag in tweet.hashtags:
+                            store_local(tags_stats, tag)
+                        tags_stats = cleanup_local_history(tags_stats)
+                        last = handle_new_local_top(tags_stats, last)
+                        store_tweet(driver, tweet)
+                except JSONDecodeError as e:
+                    print(f"error when parsing json: {e} for line {line}")
 
 
 if __name__ == "__main__":
