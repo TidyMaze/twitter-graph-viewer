@@ -1,10 +1,20 @@
 import json
 import os
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 
 import requests
 from neo4j import GraphDatabase
+
+
+@dataclass(frozen=True)
+class Tweet:
+    id: str
+    text: str
+    created_at: datetime
+    hashtags: []
+
 
 MAX_DISPLAY_HASHTAGS = 8
 
@@ -81,6 +91,10 @@ def compute_local_top():
                   reverse=True)[:MAX_DISPLAY_HASHTAGS]
 
 
+def parse_datetime_iso(raw):
+    return datetime.fromisoformat(raw.replace('Z', '+00:00'))
+
+
 for line in r.iter_lines(decode_unicode=True):
     # filter out keep-alive new lines
     if line:
@@ -89,9 +103,15 @@ for line in r.iter_lines(decode_unicode=True):
             if 'data' in parsed and 'entities' in parsed[
                 'data'] and 'hashtags' in \
                     parsed['data']['entities']:
-                tags = parsed['data']['entities']['hashtags']
-                for tag in tags:
-                    store_local(tag['tag'])
+                tweet = Tweet(
+                    id=parsed['data']['id'],
+                    text=parsed['data']['text'],
+                    created_at=parse_datetime_iso(parsed['data']['created_at']),
+                    hashtags=map(lambda hashtag: hashtag['tag'],
+                                 parsed['data']['entities']['hashtags'])
+                )
+                for tag in tweet.hashtags:
+                    store_local(tag)
                 cleanup_local_history()
                 handle_new_local_top()
         except JSONDecodeError as e:
