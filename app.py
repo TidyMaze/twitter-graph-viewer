@@ -97,20 +97,11 @@ def merge_tweet_hashtag(tx, tweet, hashtag):
 
 
 def store_tweet(driver, tweet):
-    print(f'tweet has hashtags: {tweet.hashtags}')
     with driver.session() as session:
         session.write_transaction(merge_tweet, tweet)
-        map(
-            lambda hashtag: session.write_transaction(merge_hashtag, hashtag),
-            tweet.hashtags
-        )
-        map(
-            lambda hashtag: session.write_transaction(merge_tweet_hashtag,
-                                                      tweet,
-                                                      hashtag),
-            tweet.hashtags
-        )
-
+        for h in tweet.hashtags:
+            session.write_transaction(merge_hashtag, h)
+            session.write_transaction(merge_tweet_hashtag, tweet, h)
 
 def main():
     with GraphDatabase.driver(graphenedb_url,
