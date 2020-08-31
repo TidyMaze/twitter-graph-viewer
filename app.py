@@ -87,11 +87,26 @@ def merge_hashtag(tx, tag):
     tx.run("MERGE (t: Hashtag {tag: tag})", tag=tag)
 
 
+def merge_tweet_hashtag(tx, tweet, hashtag):
+    tx.run("MATCH (t: Tweet), (h: Hashtag)"
+           "WHERE t.id=$tweet_id AND h.tag=$hashtag_tag"
+           "MERGE (t)-[r:TAGGED_AS]->(h)",
+           tweet_id=tweet.id,
+           hashtag_tag=hashtag
+           )
+
+
 def store_tweet(driver, tweet):
     with driver.session() as session:
         session.write_transaction(merge_tweet, tweet)
         map(
             lambda hashtag: session.write_transaction(merge_hashtag, hashtag),
+            tweet.hashtags
+        )
+        map(
+            lambda hashtag: session.write_transaction(merge_tweet_hashtag,
+                                                      tweet,
+                                                      hashtag),
             tweet.hashtags
         )
 
