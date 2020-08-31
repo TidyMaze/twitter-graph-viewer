@@ -97,6 +97,7 @@ def merge_tweet_hashtag(tx, tweet, hashtag):
 
 
 def store_tweet(driver, tweet):
+    print(f'tweet has hashtags: {tweet.hashtags}')
     with driver.session() as session:
         session.write_transaction(merge_tweet, tweet)
         map(
