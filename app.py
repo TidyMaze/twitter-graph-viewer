@@ -84,7 +84,7 @@ def merge_tweet(tx, tweet):
 
 
 def merge_hashtag(tx, tag):
-    tx.run("MERGE (t: Hashtag {tag: tag})", tag=tag)
+    tx.run("MERGE (t: Hashtag {tag: $tag})", tag=tag)
 
 
 def merge_tweet_hashtag(tx, tweet, hashtag):
