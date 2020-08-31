@@ -135,13 +135,15 @@ def main():
                     if 'data' in parsed and 'entities' in parsed[
                         'data'] and 'hashtags' in \
                             parsed['data']['entities']:
+                        hashtags = list(map(lambda hashtag: hashtag['tag'],
+                                            parsed['data']['entities'][
+                                                'hashtags']))
                         tweet = Tweet(
                             id=parsed['data']['id'],
                             text=parsed['data']['text'],
                             created_at=parse_datetime_iso(
                                 parsed['data']['created_at']),
-                            hashtags=map(lambda hashtag: hashtag['tag'],
-                                         parsed['data']['entities']['hashtags'])
+                            hashtags=hashtags
                         )
                         for tag in tweet.hashtags:
                             store_local(tags_stats, tag)
