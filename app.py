@@ -15,7 +15,9 @@ graphenedb_url = os.environ.get("GRAPHENEDB_BOLT_URL")
 graphenedb_user = os.environ.get("GRAPHENEDB_BOLT_USER")
 graphenedb_pass = os.environ.get("GRAPHENEDB_BOLT_PASSWORD")
 
-driver = GraphDatabase.driver(graphenedb_url, auth=(graphenedb_user, graphenedb_pass), encrypted=True)
+driver = GraphDatabase.driver(graphenedb_url,
+                              auth=(graphenedb_user, graphenedb_pass),
+                              encrypted=True)
 
 session = driver.session()
 
@@ -38,10 +40,45 @@ if r.encoding is None:
 last = []
 
 
+def tabulate(t):
+    return f"{t[0] + 1}. \u2067{t[1][0]}\u2069: {len(t[1][1])}\t"
+
+
 def format_top(top):
-    return " ".join(
-        map(lambda t: f"{t[0] + 1}. \u2067{t[1][0]}\u2069: {len(t[1][1])}\t",
-            enumerate(top)))
+    return f'Top {MAX_DISPLAY_HASHTAGS} hashtags: ' + " ".join(
+        map(tabulate, enumerate(top))) + f' total {len(tags_stats)}'
+
+
+def store_local(tag_tag):
+    if tag_tag not in tags_stats:
+        tags_stats[tag_tag] = [datetime.now()]
+    else:
+        tags_stats[tag_tag].append(datetime.now())
+
+
+def cleanup_local_history():
+    global tags_stats
+    tags_stats = {
+        k: updated
+        for
+        k, dates in tags_stats.items() for updated in
+        [list(filter(lambda d: d >= (datetime.now() - delay),
+                     dates))] if len(updated) > 0}
+
+
+def handle_new_local_top():
+    global last
+    top = compute_local_top()
+    if list(map(lambda a: a[0], top)) != list(
+            map(lambda a: a[0], last)):
+        print(format_top(
+            top))
+        last = top
+
+
+def compute_local_top():
+    return sorted(tags_stats.items(), key=lambda item: len(item[1]),
+                  reverse=True)[:MAX_DISPLAY_HASHTAGS]
 
 
 for line in r.iter_lines(decode_unicode=True):
@@ -54,24 +91,8 @@ for line in r.iter_lines(decode_unicode=True):
                     parsed['data']['entities']:
                 tags = parsed['data']['entities']['hashtags']
                 for tag in tags:
-                    tag_tag = tag['tag']
-                    if tag_tag not in tags_stats:
-                        tags_stats[tag_tag] = [datetime.now()]
-                    else:
-                        tags_stats[tag_tag].append(datetime.now())
-                tags_stats = {
-                    k: updated
-                    for
-                    k, dates in tags_stats.items() for updated in
-                    [list(filter(lambda d: d >= (datetime.now() - delay),
-                                 dates))] if len(updated) > 0}
-                # print(str(tags_stats))
-                top = sorted(tags_stats.items(), key=lambda item: len(item[1]),
-                             reverse=True)[:MAX_DISPLAY_HASHTAGS]
-                if list(map(lambda a: a[0], top)) != list(
-                        map(lambda a: a[0], last)):
-                    print(f'Top {MAX_DISPLAY_HASHTAGS} hashtags: ' + format_top(
-                        top) + f' total {len(tags_stats)}')
-                    last = top
+                    store_local(tag['tag'])
+                cleanup_local_history()
+                handle_new_local_top()
         except JSONDecodeError as e:
             print(f"error when parsing json: {e} for line {line}")
