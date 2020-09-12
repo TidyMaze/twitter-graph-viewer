@@ -16,8 +16,9 @@ class Tweet:
     hashtags: []
 
 
-MAX_NODES_ALLOWED = 1000
+MAX_NODES_ALLOWED = 950
 MAX_DISPLAY_HASHTAGS = 8
+TWITTER_SAMPLE_STREAM_URL = 'https://api.twitter.com/2/tweets/sample/stream'
 
 delay = timedelta(minutes=1)
 
@@ -126,44 +127,49 @@ def main():
         # destroy_everything(driver)
 
         print("Starting Twitter stream ...")
-        r = requests.get('https://api.twitter.com/2/tweets/sample/stream',
-                         params={'tweet.fields': 'id,text,entities,created_at'},
-                         headers={'Authorization': 'Bearer ' + twitter_bearer},
-                         stream=True)
-
-        if r.encoding is None:
-            r.encoding = 'utf-8'
-            print("Set encoding to utf-8")
 
         cnt = 0
 
         print("Start reading lines")
 
-        for line in r.iter_lines(decode_unicode=True):
-            # filter out keep-alive new lines
-            if line:
-                try:
-                    parsed = json.loads(line)
-                    if 'data' in parsed and 'entities' in parsed[
-                        'data'] and 'hashtags' in \
-                            parsed['data']['entities']:
-                        hashtags = list(map(lambda hashtag: hashtag['tag'],
-                                            parsed['data']['entities'][
-                                                'hashtags']))
-                        tweet = Tweet(
-                            id=parsed['data']['id'],
-                            text=parsed['data']['text'],
-                            created_at=parse_datetime_iso(
-                                parsed['data']['created_at']),
-                            hashtags=hashtags
-                        )
-                        if len(tweet.hashtags) > 0:
-                            print(f"Storing tweet #{cnt} {tweet} ...", end="")
-                            store_tweet(driver, tweet)
-                            delete_old_tweets(driver)
-                            cnt += 1
-                except JSONDecodeError as e:
-                    print(f"error when parsing json: {e} for line {line}")
+        params = {'tweet.fields': 'id,text,entities,created_at'}
+        headers = {'Authorization': 'Bearer ' + twitter_bearer}
+
+        while True:
+            r = requests.get(TWITTER_SAMPLE_STREAM_URL,
+                             params=params,
+                             headers=headers,
+                             stream=True)
+            if r.encoding is None:
+                r.encoding = 'utf-8'
+                print("Set encoding to utf-8")
+
+            for line in r.iter_lines(decode_unicode=True):
+                # filter out keep-alive new lines
+                if line:
+                    try:
+                        parsed = json.loads(line)
+                        if 'data' in parsed and 'entities' in parsed[
+                            'data'] and 'hashtags' in \
+                                parsed['data']['entities']:
+                            hashtags = list(map(lambda hashtag: hashtag['tag'],
+                                                parsed['data']['entities'][
+                                                    'hashtags']))
+                            tweet = Tweet(
+                                id=parsed['data']['id'],
+                                text=parsed['data']['text'],
+                                created_at=parse_datetime_iso(
+                                    parsed['data']['created_at']),
+                                hashtags=hashtags
+                            )
+                            if len(tweet.hashtags) > 0:
+                                print(f"Storing tweet #{cnt} {tweet} ...",
+                                      end="")
+                                store_tweet(driver, tweet)
+                                delete_old_tweets(driver)
+                                cnt += 1
+                    except JSONDecodeError as e:
+                        print(f"error when parsing json: {e} for line {line}")
     print("Ending")
 
 
