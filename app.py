@@ -140,7 +140,6 @@ def main():
         print("Start reading lines")
 
         for line in r.iter_lines(decode_unicode=True):
-            print(f"line: {line}")
             # filter out keep-alive new lines
             if line:
                 try:
