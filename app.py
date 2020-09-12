@@ -121,7 +121,7 @@ def delete_old_tweets(driver):
 def main():
     with GraphDatabase.driver(graphenedb_url,
                               auth=(graphenedb_user, graphenedb_pass),
-                              encrypted=True) as driver:
+                              encrypted=False) as driver:
 
         # destroy_everything(driver)
 
@@ -137,7 +137,10 @@ def main():
 
         cnt = 0
 
+        print("Start reading lines")
+
         for line in r.iter_lines(decode_unicode=True):
+            print(f"line: {line}")
             # filter out keep-alive new lines
             if line:
                 try:
@@ -162,6 +165,7 @@ def main():
                             cnt += 1
                 except JSONDecodeError as e:
                     print(f"error when parsing json: {e} for line {line}")
+    print("Ending")
 
 
 if __name__ == "__main__":
