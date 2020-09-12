@@ -16,6 +16,7 @@ class Tweet:
     hashtags: []
 
 
+MAX_NODES_ALLOWED = 1000
 MAX_DISPLAY_HASHTAGS = 8
 
 delay = timedelta(minutes=1)
@@ -33,41 +34,6 @@ def tabulate(t):
 def format_top(tags_stats, top):
     return f'Top {MAX_DISPLAY_HASHTAGS} hashtags: ' + " ".join(
         map(tabulate, enumerate(top))) + f' total {len(tags_stats)}'
-
-
-def store_local(tags_stats, tag_tag):
-    if tag_tag not in tags_stats:
-        tags_stats[tag_tag] = [datetime.now()]
-    else:
-        tags_stats[tag_tag].append(datetime.now())
-
-
-def cleanup_local_history(tags_stats):
-    return {
-        k: updated
-        for k, dates in tags_stats.items()
-        for updated in [
-            list(filter(lambda d: d >= (datetime.now() - delay), dates))
-        ]
-        if len(updated) > 0
-    }
-
-
-def handle_new_local_top(tags_stats, last):
-    top = compute_local_top(tags_stats)
-    if list(map(lambda a: a[0], top)) != list(
-            map(lambda a: a[0], last)):
-        print(format_top(tags_stats, top))
-        return top
-    return last
-
-
-def compute_local_top(tags_stats):
-    return sorted(
-        tags_stats.items(),
-        key=lambda item: len(item[1]),
-        reverse=True
-    )[:MAX_DISPLAY_HASHTAGS]
 
 
 def parse_datetime_iso(raw):
@@ -96,17 +62,70 @@ def merge_tweet_hashtag(tx, tweet, hashtag):
            )
 
 
+def destroy_everything_txn(tx):
+    tx.run("MATCH (n) DETACH DELETE n")
+
+
+def delete_oldest_tweets_txn(tx, limit):
+    tx.run(
+        "match (t: Tweet) "
+        "with t,datetime(t.created_at) as date "
+        "order by date "
+        "limit $limit "
+        "detach delete t",
+        limit=limit)
+
+
+def delete_hashtags_without_tweet_txn(tx):
+    tx.run("match (h:Hashtag) "
+           "where not (:Tweet)-[:TAGGED_AS]->(h) "
+           "detach delete h")
+
+
+def destroy_everything(driver):
+    with driver.session() as session:
+        session.write_transaction(destroy_everything_txn)
+        print("Destroyed everything")
+
+
 def store_tweet(driver, tweet):
     with driver.session() as session:
         session.write_transaction(merge_tweet, tweet)
         for h in tweet.hashtags:
             session.write_transaction(merge_hashtag, h)
             session.write_transaction(merge_tweet_hashtag, tweet, h)
+        print(f" done")
+
+
+def delete_oldest_tweets(driver, limit):
+    with driver.session() as session:
+        session.write_transaction(delete_oldest_tweets_txn, limit)
+        session.write_transaction(delete_hashtags_without_tweet_txn)
+        print(f"Deleted oldest {limit} tweets")
+
+
+# match (t: Tweet) where datetime(t.created_at) > (datetime() - duration('PT1M')) return t
+# match (t:Tweet)-[:TAGGED_AS]->(h:Hashtag) with count(*) as cnt, h order by cnt desc return h,cnt limit 10
+# match (h:Hashtag)-[r:COTAGGED_WITH]-(h2:Hashtag) where r.cnt > 100 with h,h2,r order by r.cnt desc return h,r,h2,r.cnt limit 300
+
+def delete_old_tweets(driver):
+    with driver.session() as session:
+        nodes_count = session.run("match (t) return count(*)").single()[
+            'count(*)']
+        print(f"current nodes count: {nodes_count}")
+        if nodes_count > MAX_NODES_ALLOWED:
+            nodes_to_clean = nodes_count - MAX_NODES_ALLOWED
+            delete_oldest_tweets(driver, nodes_to_clean)
+
 
 def main():
     with GraphDatabase.driver(graphenedb_url,
                               auth=(graphenedb_user, graphenedb_pass),
                               encrypted=True) as driver:
+
+        # destroy_everything(driver)
+
+        print("Starting Twitter stream ...")
         r = requests.get('https://api.twitter.com/2/tweets/sample/stream',
                          params={'tweet.fields': 'id,text,entities,created_at'},
                          headers={'Authorization': 'Bearer ' + twitter_bearer},
@@ -114,10 +133,9 @@ def main():
 
         if r.encoding is None:
             r.encoding = 'utf-8'
+            print("Set encoding to utf-8")
 
-        last = []
-
-        tags_stats = {}
+        cnt = 0
 
         for line in r.iter_lines(decode_unicode=True):
             # filter out keep-alive new lines
@@ -137,12 +155,11 @@ def main():
                                 parsed['data']['created_at']),
                             hashtags=hashtags
                         )
-                        for tag in tweet.hashtags:
-                            store_local(tags_stats, tag)
-                        tags_stats = cleanup_local_history(tags_stats)
-                        last = handle_new_local_top(tags_stats, last)
                         if len(tweet.hashtags) > 0:
+                            print(f"Storing tweet #{cnt} {tweet} ...", end="")
                             store_tweet(driver, tweet)
+                            delete_old_tweets(driver)
+                            cnt += 1
                 except JSONDecodeError as e:
                     print(f"error when parsing json: {e} for line {line}")
 
