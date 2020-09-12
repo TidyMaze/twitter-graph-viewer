@@ -121,7 +121,7 @@ def delete_old_tweets(driver):
 def main():
     with GraphDatabase.driver(graphenedb_url,
                               auth=(graphenedb_user, graphenedb_pass),
-                              encrypted=False) as driver:
+                              encrypted=True) as driver:
 
         # destroy_everything(driver)
 
