@@ -28,4 +28,4 @@ def static_proxy():
 
 
 print(f"\nGo to http://localhost:{PORT} to see the example\n")
-app.run(port=PORT)
+app.run(PORT, '0.0.0.0')
