@@ -37,7 +37,7 @@ window.onload = function exampleFunction() {
         d.fy = null;
     }
 
-    d3.json("force/force.json", function (error, graph) {
+    d3.json("/data", function (error, graph) {
         if (error) throw error;
 
         var link = svg.append("g")
