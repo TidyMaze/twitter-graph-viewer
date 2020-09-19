@@ -12,6 +12,10 @@ def get_neo4j_driver():
                                 auth=(graphenedb_user, graphenedb_pass),
                                 encrypted=True)
 
+def get_all(driver):
+    with driver.session() as session:
+        r = session.run("MATCH (tweet:Tweet)-[r:TAGGED_AS]->(hashtag:Hashtag) RETURN r,tweet,hashtag")
+        return r.data()
 
 def merge_tweet(tx, tweet):
     tx.run(
