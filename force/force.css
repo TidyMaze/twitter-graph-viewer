@@ -7,6 +7,16 @@
 
 .links line {
     fill: none;
-    stroke: #9ecae1;
+    stroke: black;
     stroke-width: .5px;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+svg {
+    width: 100%;
+    height: 100%;
 }
