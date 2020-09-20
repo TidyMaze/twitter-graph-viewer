@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from twitter_repository import *
+import time
 
 import requests
 
@@ -88,6 +89,9 @@ def main():
                                 cnt += 1
                     except JSONDecodeError as e:
                         print(f"error when parsing json: {e} for line {line}")
+                        if(line == 'Rate limit exceeded'):
+                            time.sleep(10)
+
     print("Ending")
 
 
