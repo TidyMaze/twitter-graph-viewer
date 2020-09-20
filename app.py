@@ -46,7 +46,7 @@ def main():
 
         print("Start reading lines")
 
-        params = {'tweet.fields': 'id,text,entities,created_at'}
+        params = {'tweet.fields': 'id,text,entities,created_at', 'expansions': 'author_id'}
         headers = {'Authorization': 'Bearer ' + twitter_bearer}
 
         while True:
@@ -77,8 +77,7 @@ def main():
                                 hashtags=hashtags
                             )
                             if len(tweet.hashtags) > 0:
-                                print(f"Storing tweet #{cnt} {tweet} ...",
-                                      end="")
+                                print(f"Storing tweet #{cnt} {tweet} from input {parsed} ...", end="")
                                 store_tweet(driver, tweet)
                                 delete_old_tweets(driver)
                                 cnt += 1
