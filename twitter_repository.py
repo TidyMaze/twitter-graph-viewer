@@ -14,7 +14,7 @@ def get_neo4j_driver():
 
 def get_all(driver):
     with driver.session() as session:
-        top = session.run("match ()-[r:TAGGED_AS]->(h:Hashtag) with count(()-->(h)) as cnt, h order by cnt desc where cnt > 1 return h, cnt limit 10")
+        top = session.run("match ()-[r:TAGGED_AS]->(h:Hashtag) with count(()-->(h)) as cnt, h order by cnt desc where cnt > 1 return h, cnt limit 30")
         top_tags = list(map(lambda record: record['h']['tag'], top))
         print(f"top is {top_tags}")
         r = session.run("match (t:Tweet)-[r:TAGGED_AS]->(h:Hashtag) where h.tag in $top_tags return r, t, h", top_tags = top_tags)

@@ -2,13 +2,13 @@
     cursor: pointer;
     fill: #ff3399;
     stroke: #000;
-    stroke-width: .5px;
+    stroke-width: 1px;
 }
 
 .links line {
     fill: none;
     stroke: black;
-    stroke-width: .5px;
+    stroke-width: 1px;
 }
 
 html, body {
