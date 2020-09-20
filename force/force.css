@@ -1,8 +1,15 @@
 .nodes circle {
     cursor: pointer;
-    fill: #ff3399;
     stroke: #000;
     stroke-width: 1px;
+}
+
+.nodes circle.tweet {
+    fill: green;
+}
+
+.nodes circle.hashtag {
+    fill: orange;
 }
 
 .links line {

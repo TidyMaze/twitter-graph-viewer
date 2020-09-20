@@ -22,6 +22,8 @@ def result_as_graph(neo4j_result):
     for row in neo4j_result:
         print(f'row: {row}')
         G.add_edge(row['r'][0]['id'], row['r'][2]['tag'])
+        G.nodes[row['r'][0]['id']]['kind'] = 'tweet'
+        G.nodes[row['r'][2]['tag']]['kind'] = 'hashtag'
     return json_graph.node_link_data(G)
 
 

@@ -53,6 +53,12 @@ window.onload = function exampleFunction() {
             .data(graph.nodes)
             .enter().append("circle")
             .attr("r", 20)
+            .classed("tweet", function(el){
+              return el.kind == "tweet";
+            })
+            .classed("hashtag", function(el){
+              return el.kind == "hashtag";
+            })
             .call(d3.drag()
                 .on("start", dragstarted)
                 .on("drag", dragged)
