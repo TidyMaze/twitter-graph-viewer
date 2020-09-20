@@ -5,11 +5,11 @@
 }
 
 .nodes circle.tweet {
-    fill: green;
+    fill: #FF9133;
 }
 
 .nodes circle.hashtag {
-    fill: orange;
+    fill: #87E2F5;
 }
 
 .links line {
