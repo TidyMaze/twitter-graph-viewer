@@ -10,6 +10,7 @@ import requests
 @dataclass(frozen=True)
 class Tweet:
     id: str
+    username: str
     text: str
     created_at: datetime
     hashtags: []
@@ -38,7 +39,7 @@ def parse_datetime_iso(raw):
 def main():
     with get_neo4j_driver() as driver:
 
-        # destroy_everything(driver)
+        destroy_everything(driver)
 
         print("Starting Twitter stream ...")
 
@@ -69,15 +70,19 @@ def main():
                             hashtags = list(map(lambda hashtag: hashtag['tag'],
                                                 parsed['data']['entities'][
                                                     'hashtags']))
+
+                            print(f"Input parsed {parsed}")
+
                             tweet = Tweet(
                                 id=parsed['data']['id'],
+                                username=list(filter(lambda u: u['id'] == parsed['data']['author_id'], parsed['includes']['users']))[0]['username'],
                                 text=parsed['data']['text'],
                                 created_at=parse_datetime_iso(
                                     parsed['data']['created_at']),
                                 hashtags=hashtags
                             )
                             if len(tweet.hashtags) > 0:
-                                print(f"Storing tweet #{cnt} {tweet} from input {parsed} ...", end="")
+                                print(f"Storing tweet #{cnt} {tweet} ...", end="")
                                 store_tweet(driver, tweet)
                                 delete_old_tweets(driver)
                                 cnt += 1

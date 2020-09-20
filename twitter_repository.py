@@ -22,10 +22,11 @@ def get_all(driver):
 
 def merge_tweet(tx, tweet):
     tx.run(
-        "MERGE (t: Tweet {id: $id, text: $text, created_at: $created_at})",
+        "MERGE (t: Tweet {id: $id, text: $text, created_at: $created_at, username: $username})",
         id=tweet.id,
         text=tweet.text,
-        created_at=tweet.created_at.isoformat()
+        created_at=tweet.created_at.isoformat(),
+        username=tweet.username
     )
 
 

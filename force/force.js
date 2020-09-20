@@ -53,6 +53,7 @@ window.onload = function exampleFunction() {
             .data(graph.nodes)
             .enter().append("circle")
             .attr("r", 30)
+
             .classed("tweet", function(el){
               return el.kind == "tweet";
             })
