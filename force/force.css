@@ -1,7 +1,6 @@
 .nodes circle {
     cursor: pointer;
     stroke: #000;
-    stroke-width: 1px;
 }
 
 .nodes circle.tweet {
@@ -23,7 +22,7 @@ html, body {
     margin: 0;
 }
 
-svg {
+#container, svg {
     width: 100%;
     height: 100%;
 }

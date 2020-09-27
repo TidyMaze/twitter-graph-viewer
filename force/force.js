@@ -38,6 +38,34 @@ window.onload = function exampleFunction() {
         d.fy = null;
     }
 
+  // create a tooltip
+  var Tooltip = d3.select("#container")
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "white")
+    .style("position", "absolute")
+    .style("border", "solid")
+    .style("border-width", "2px")
+    .style("border-radius", "5px")
+    .style("padding", "5px")
+
+  var onclick = function(d) {
+    Tooltip
+      .html(d.kind == 'tweet' ? "Tweet " + d.id : 'Hashtag ' + d.id)
+      .style("left", (d3.mouse(this)[0]+70) + "px")
+      .style("top", (d3.mouse(this)[1]) + "px")
+      .style("opacity", 1)
+      .style("stroke", d.kind == 'tweet' ? '#FF9133' : '#87E2F5')
+
+    d3.select(this)
+      .attr("stroke-width", "3")
+  }
+
+  var onclickoutside = function(d) {
+    Tooltip.style("opacity", 0)
+  }
+
     d3.json("/data", function (error, graph) {
         if (error) throw error;
 
@@ -76,6 +104,8 @@ window.onload = function exampleFunction() {
 
         simulation.force("link")
             .links(graph.links);
+
+        node.on("click", onclick)
 
         function ticked() {
             link
