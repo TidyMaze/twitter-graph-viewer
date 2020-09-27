@@ -46,7 +46,7 @@ window.onload = function exampleFunction() {
     .style("background-color", "white")
     .style("position", "absolute")
     .style("border", "solid")
-    .style("border-width", "2px")
+    .style("border-width", "1px")
     .style("border-radius", "5px")
     .style("padding", "5px")
 
@@ -56,7 +56,7 @@ window.onload = function exampleFunction() {
       .style("left", (d3.mouse(this)[0]+70) + "px")
       .style("top", (d3.mouse(this)[1]) + "px")
       .style("opacity", 1)
-      .style("stroke", d.kind == 'tweet' ? '#FF9133' : '#87E2F5')
+      .style("border-color", d.kind == 'tweet' ? '#FF9133' : '#87E2F5')
 
     d3.select(this)
       .attr("stroke-width", "3")
