@@ -17,9 +17,9 @@ window.onload = function exampleFunction() {
         .force("link", d3.forceLink().id(function (d) {
             return d.id;
         }).distance(50))
-        .force("charge", d3.forceManyBody().strength(-70).distanceMax(200))
+        .force("charge", d3.forceManyBody().strength(-30).distanceMax(100))
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collide", d3.forceCollide(30));
+        .force("collide", d3.forceCollide(15));
 
     function dragstarted(d) {
         if (!d3.event.active) simulation.alphaTarget(0.3).restart();
@@ -52,7 +52,7 @@ window.onload = function exampleFunction() {
             .selectAll("circle")
             .data(graph.nodes)
             .enter().append("circle")
-            .attr("r", 30)
+            .attr("r", 10)
 
             .classed("tweet", function(el){
               return el.kind == "tweet";
