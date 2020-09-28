@@ -51,6 +51,7 @@ window.onload = function exampleFunction() {
     .style("padding", "5px")
 
   var onclick = function(d) {
+    console.log(d)
     Tooltip
       .html(d.kind == 'tweet' ? "Tweet " + d.id : 'Hashtag ' + d.id)
       .style("left", (d3.mouse(this)[0]+70) + "px")

@@ -23,7 +23,11 @@ def result_as_graph(neo4j_result):
         print(f'row: {row}')
         G.add_edge(row['r'][0]['id'], row['r'][2]['tag'])
         G.nodes[row['r'][0]['id']]['kind'] = 'tweet'
+        for k,v in row['r'][0]:
+            G.nodes[row['r'][0]['id']][k] = v
         G.nodes[row['r'][2]['tag']]['kind'] = 'hashtag'
+        for k,v in row['r'][2]:
+            G.nodes[row['r'][2]['tag']][k] = v
     return json_graph.node_link_data(G)
 
 
