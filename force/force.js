@@ -135,3 +135,7 @@ window.onload = function exampleFunction() {
         }
     });
 }
+
+setTimeout(function(){
+  location = ''
+},10000)
