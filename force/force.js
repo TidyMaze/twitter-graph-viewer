@@ -17,7 +17,7 @@ window.onload = function exampleFunction() {
         .force("link", d3.forceLink().id(function (d) {
             return d.id;
         }).distance(50))
-        .force("charge", d3.forceManyBody().strength(-30).distanceMax(100))
+        .force("charge", d3.forceManyBody().strength(-50).distanceMax(100))
         .force("center", d3.forceCenter(width / 2, height / 2))
         .force("collide", d3.forceCollide(15));
 
@@ -50,6 +50,19 @@ window.onload = function exampleFunction() {
     .style("border-radius", "5px")
     .style("padding", "5px")
 
+  function equalToEventTarget() {
+    return this == d3.event.target;
+  }
+
+  svg.on('click', function(d){
+    var outside = d3.selectAll(".tooltip, circle, circle *").filter(equalToEventTarget).empty();
+    if (outside) {
+      console.log('Clicked outside')
+      Tooltip.style("opacity", 0)
+      d3.selectAll("circle").classed("selected", false)
+    }
+  });
+
   var onclick = function(d) {
     console.log(d)
     Tooltip
@@ -61,12 +74,10 @@ window.onload = function exampleFunction() {
       .style("opacity", 1)
       .style("border-color", d.kind == 'tweet' ? '#FF9133' : '#87E2F5')
 
-    d3.select(this)
-      .attr("stroke-width", "3")
-  }
+    d3.selectAll("circle").classed("selected", false)
 
-  var onclickoutside = function(d) {
-    Tooltip.style("opacity", 0)
+    d3.select(this)
+      .classed("selected", true)
   }
 
     d3.json("/data", function (error, graph) {

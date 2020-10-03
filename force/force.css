@@ -1,6 +1,6 @@
 .nodes circle {
     cursor: pointer;
-    stroke: #000;
+    stroke: rgba(0,0,0,.4);
 }
 
 .nodes circle.tweet {
@@ -25,4 +25,8 @@ html, body {
 #container, svg {
     width: 100%;
     height: 100%;
+}
+
+.nodes circle.selected {
+    stroke-width: 5px;
 }
