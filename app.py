@@ -8,6 +8,7 @@ import time
 
 import requests
 
+
 @dataclass(frozen=True)
 class Tweet:
     id: str
@@ -48,7 +49,7 @@ def main():
 
         print("Start reading lines")
 
-        params = {'tweet.fields': 'id,text,entities,created_at', 'expansions': 'author_id'}
+        params = {'tweet.fields': 'id,text,entities,created_at,lang', 'expansions': 'author_id'}
         headers = {'Authorization': 'Bearer ' + twitter_bearer}
 
         while True:
@@ -67,7 +68,7 @@ def main():
                         parsed = json.loads(line)
                         if 'data' in parsed and 'entities' in parsed[
                             'data'] and 'hashtags' in \
-                                parsed['data']['entities']:
+                                parsed['data']['entities'] and 'lang' in parsed['data'] and parsed['data']['lang'] in ['en', 'fr']:
                             hashtags = list(map(lambda hashtag: hashtag['tag'],
                                                 parsed['data']['entities'][
                                                     'hashtags']))
@@ -89,7 +90,7 @@ def main():
                                 cnt += 1
                     except JSONDecodeError as e:
                         print(f"error when parsing json: {e} for line {line}")
-                        if(line == 'Rate limit exceeded'):
+                        if (line == 'Rate limit exceeded'):
                             time.sleep(10)
 
     print("Ending")
