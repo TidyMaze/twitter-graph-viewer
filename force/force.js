@@ -53,7 +53,9 @@ window.onload = function exampleFunction() {
   var onclick = function(d) {
     console.log(d)
     Tooltip
-      .html(d.kind == 'tweet' ? "Tweet " + d.id : 'Hashtag ' + d.id)
+      .html(d.kind == 'tweet'
+        ? `Tweet<br/>@${d.username}: ${d.text}<br/><a href="https://twitter.com/${d.username}/status/${d.id}">Link</a>`
+        : `Hashtag<br/><a href="https://twitter.com/hashtag/${d.id}">${d.id}</a>`)
       .style("left", (d3.mouse(this)[0]+70) + "px")
       .style("top", (d3.mouse(this)[1]) + "px")
       .style("opacity", 1)
